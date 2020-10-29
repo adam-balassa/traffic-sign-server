@@ -12,3 +12,5 @@ spring:
       ddl-auto: update
     open-in-view: true
 info.version: @version@
+detector:
+  host: http://localhost:8081
