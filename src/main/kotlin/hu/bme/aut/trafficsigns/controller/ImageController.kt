@@ -6,6 +6,7 @@ import hu.bme.aut.trafficsigns.api.response.model.BoundingBox
 import hu.bme.aut.trafficsigns.api.response.model.Classification
 import hu.bme.aut.trafficsigns.api.response.model.Coordinates
 import hu.bme.aut.trafficsigns.api.response.model.Detection
+import hu.bme.aut.trafficsigns.service.DetectionService
 import hu.bme.aut.trafficsigns.util.imageToBase64
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -14,30 +15,16 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/image")
-class ImageController {
+class ImageController (
+        private val service: DetectionService
+){
     @PostMapping
-    fun classifyImage(@RequestBody image: String): DetectionResult {
-        return DetectionResult(
-                listOf(Detection(
-                        BoundingBox(Coordinates(10.0, 100.0), Coordinates(100.0, 200.0)),
-                        Classification(0),
-                        0.98
-                )),
-                DetectionResult.Base64Image(imageToBase64("testimage.png")),
-                2345.0
-        )
+    fun classifyImage(@RequestBody image: Image): DetectionResult {
+        return service.runDetection(image.image.removePrefix("data:image/png;base64,"))
     }
 
     @PostMapping("/random")
     fun classifyRandomImage(): DetectionResult {
-        return DetectionResult(
-                listOf(Detection(
-                        BoundingBox(Coordinates(10.0, 100.0), Coordinates(100.0, 200.0)),
-                        Classification(0),
-                        0.98
-                )),
-                DetectionResult.Base64Image(imageToBase64("testimage.png")),
-                2345.0
-        )
+        return service.runRandomImageDetection()
     }
 }

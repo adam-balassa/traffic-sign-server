@@ -8,7 +8,4 @@ data class DetectionResult (
         val executionTime: Double
 ){
 
-    class Base64Image (
-            val base64: String
-    )
 }
