@@ -7,23 +7,20 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.lang.Exception
-import java.util.logging.LogManager
-import java.util.logging.Logger
 
 @ControllerAdvice
 class ExceptionHandler () {
     private val log = LoggerFactory.getLogger(hu.bme.aut.trafficsigns.exception.ExceptionHandler::class.java)
 
 
-    @ExceptionHandler(InternalException::class)
-    fun internalError(e: InternalException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(e.toErrorResponse(), HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(InvalidDetectorResponse::class)
+    fun internalError(e: InvalidDetectorResponse): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(e.toErrorResponse(), HttpStatus.BAD_GATEWAY)
     }
 
 
-    @ExceptionHandler(Exception::class)
-    fun genericException(e: Exception): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(Throwable::class)
+    fun genericException(e: Throwable): ResponseEntity<ErrorResponse> {
         val sw = StringWriter()
         val pw = PrintWriter(sw)
         e.printStackTrace(pw)

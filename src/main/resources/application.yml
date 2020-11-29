@@ -2,15 +2,19 @@ server.port: 8080
 spring:
   application:
     name: Traffic Signs Server
+
   datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:db?serverTimezone=UTC;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-  jpa:
-    hibernate:
-      ddl-auto: update
+    url: jdbc:postgresql://ec2-54-166-114-48.compute-1.amazonaws.com:5432/devsetie6g680q
+    username: eslngvcukrlttn
+    password: c5739edd6cbd92d5ffddd9207ff3ef14ba1c350c5036b1c53db42d803cbbe52c
+    driver-class-name: org.postgresql.Driver
     open-in-view: true
+
+  jpa:
+    open-in-view: false
+    show-sql: true
+    hibernate.ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQL94Dialect
 info.version: @version@
 detector:
   host: http://localhost:8081

@@ -7,17 +7,20 @@ import hu.bme.aut.trafficsigns.api.response.model.Classification
 import hu.bme.aut.trafficsigns.api.response.model.Coordinates
 import hu.bme.aut.trafficsigns.api.response.model.Detection
 import hu.bme.aut.trafficsigns.dto.detector.DetectionResponse
+import hu.bme.aut.trafficsigns.model.DetectedSign
+import hu.bme.aut.trafficsigns.repository.DetectionRepository
 import hu.bme.aut.trafficsigns.util.base64ToImage
 import hu.bme.aut.trafficsigns.util.deleteImage
 import hu.bme.aut.trafficsigns.util.imageToBase64
 import hu.bme.aut.trafficsigns.util.withTimeMeasure
-import net.coobird.thumbnailator.Thumbnailator
+import mapping.DtoToModelMapper
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class DetectionService (
-        private val http: HttpService
+        private val http: HttpService,
+        private val repository: DetectionRepository
 ) {
 
     private final val random = Random()
@@ -28,9 +31,61 @@ class DetectionService (
         deleteImage(path)
         return DetectionResult(
                 response.result.toDetections(),
-                Base64Image(base64Image),
+                Base64Image("data:image/png;base64,${base64Image}"),
                 response.time.toDouble()
         )
+    }
+
+    fun runAndSaveDetection(image: String, lat: Double, lon: Double): DetectionResult {
+        val result = runDetection(image)
+        val previousDetections = findCloseDetections(lat, lon)
+
+        refreshSavedDetections(result, previousDetections, lat, lon)
+
+        val legitDetections = previousDetections.filter { it.confidence > 0.4 }
+        val detectionsToAdd = legitDetections.filter { sign ->
+            result.objects.all { sign.signClass != it.classification?.serial }
+        }
+
+        return DetectionResult(
+                mutableListOf<Detection>().apply {
+                    addAll(result.objects)
+                    addAll(DtoToModelMapper.INSTANCE.modelToDto(detectionsToAdd))
+                },
+                result.image,
+                result.executionTime
+        )
+    }
+
+    private fun refreshSavedDetections(result: DetectionResult, previousDetections: List<DetectedSign>, lat: Double, lon: Double) {
+        val detectionsToSave = mutableListOf<DetectedSign>()
+        val detectionsToDelete = mutableListOf<DetectedSign>()
+
+        for (detection in result.objects) {
+            val previous = previousDetections.find { it.signClass == detection.classification?.serial }
+            if (previous != null) {
+                val common = (previous.confidence + detection.confidence) / 2
+                previous.confidence = common + (1 - common) / 2
+                previous.lat = lat; previous.lon = lon
+
+                detection.confidence = previous.confidence
+                detectionsToSave.add(previous)
+            } else {
+                detectionsToSave.add(DtoToModelMapper.INSTANCE.dtoToModel(detection, lat, lon))
+            }
+        }
+
+        for (previous in previousDetections)
+            if (result.objects.all { it.classification?.serial != previous.signClass }) {
+                previous.confidence -= 0.1
+                if (previous.confidence < 0.4)
+                    detectionsToDelete.add(previous)
+                else
+                    detectionsToSave.add(previous)
+            }
+
+        repository.saveAll(detectionsToSave)
+        repository.deleteAll(detectionsToDelete)
     }
 
     fun runRandomImageDetection(): DetectionResult {
@@ -39,6 +94,11 @@ class DetectionService (
         val imageName = images[i]
         val image = imageToBase64(imageName)
         return runDetection(image)
+    }
+
+    private fun findCloseDetections(lat: Double, lon: Double): List<DetectedSign> {
+        val d = 0.00007
+        return repository.findByLatBetweenAndLonBetween(lat - d, lat + d, lon - d, lon + d)
     }
 
     private fun DetectionResponse.toDetections(): List<Detection> {

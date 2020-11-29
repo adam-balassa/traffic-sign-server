@@ -5,7 +5,7 @@ data class ErrorResponse (
         val message: String
 )
 
-class InternalException (private val errorCode: Int, override val message: String): RuntimeException() {
+class InvalidDetectorResponse (private val errorCode: Int, override val message: String): RuntimeException() {
     fun toErrorResponse(): ErrorResponse {
         return ErrorResponse(errorCode, message)
     }
