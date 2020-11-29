@@ -7,7 +7,7 @@ import hu.bme.aut.trafficsigns.api.response.model.Classification
 import hu.bme.aut.trafficsigns.api.response.model.Coordinates
 import hu.bme.aut.trafficsigns.api.response.model.Detection
 import hu.bme.aut.trafficsigns.model.DetectedSign
-import mapping.DtoToModelMapper
+import hu.bme.aut.trafficsigns.mapping.DtoToModelMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -43,7 +43,7 @@ class DtoMappingTest {
         )
         val detection = DetectionResult(dtos, Base64Image("image"), 0.66)
 
-        val models = DtoToModelMapper.INSTANCE.dtoToModel(detection, 4.0, 5.0)
+        val models = DtoToModelMapper.dtoToModel(detection, 4.0, 5.0)
 
         assertThat(models).hasSize(2)
         val model1 = models[0]

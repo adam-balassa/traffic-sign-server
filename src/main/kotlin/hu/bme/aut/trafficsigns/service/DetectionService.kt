@@ -13,7 +13,7 @@ import hu.bme.aut.trafficsigns.util.base64ToImage
 import hu.bme.aut.trafficsigns.util.deleteImage
 import hu.bme.aut.trafficsigns.util.imageToBase64
 import hu.bme.aut.trafficsigns.util.withTimeMeasure
-import mapping.DtoToModelMapper
+import hu.bme.aut.trafficsigns.mapping.DtoToModelMapper
 import org.springframework.stereotype.Service
 import java.util.*
 
