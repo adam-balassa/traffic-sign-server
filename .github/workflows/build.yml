@@ -2,7 +2,7 @@ name: Java Sping CI with Maven
 
 on:
   push:
-    branches: [ master, develop, feat/ci/cd ]
+    branches: [ master, develop ]
   pull_request:
     branches: [ master ]
 
@@ -21,5 +21,5 @@ jobs:
       - name: Run tests
         run: ./mvnw clean test
 
-      - name: build
+      - name: Build
         run: ./mvnw package
