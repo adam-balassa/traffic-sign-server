@@ -38,6 +38,9 @@ class DetectionService (
 
     fun runAndSaveDetection(image: String, lat: Double, lon: Double): DetectionResult {
         val result = runDetection(image)
+        if (result.objects.isEmpty())
+            return result
+
         val previousDetections = findCloseDetections(lat, lon)
 
         refreshSavedDetections(result, previousDetections, lat, lon)

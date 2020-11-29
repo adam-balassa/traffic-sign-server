@@ -8,5 +8,5 @@ ${AnsiColor.RED}
       \/_/  \/_/  \/__/\/_/   \/_/    \/_/    \/_/ \/____/               \/_____/   \/_/ \/___L\ \ \/_/\/_/ \/___/
                                                                                            /\____/
                                                                                            \_/__/
-${Ansi.GREEN}${spring.application.name} ${Ansi.YELLOW}${info.version}
+${Ansi.GREEN}${spring.application.name} ${Ansi.YELLOW}${info.version} ${Ansi.GREEN}(${spring.profiles.active})
 ${Ansi.GREEN}Spring Boot ${Ansi.YELLOW}${spring-boot.version}${AnsiColor.DEFAULT}
