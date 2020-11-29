@@ -1,4 +1,4 @@
-name: Java Sping CI with Gradle
+name: Java Sping CI with Maven
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    name: Unit and Integration tests
+    name: Build with Maven
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,5 +18,8 @@ jobs:
         with:
           java-version: 1.11
 
-      - name: Test with Gradle
-        run: ./mvnw clean package
+      - name: Run tests
+        run: ./mvnw clean test
+
+      - name: build
+        run: ./mvnw package
