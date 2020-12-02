@@ -28,7 +28,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @AutoConfigureWireMock(port = 8082)
-class ImageIT {
+class DetectionIT {
 
     @Autowired
     lateinit var webTestClient: WebTestClient
@@ -94,7 +94,7 @@ class ImageIT {
     }
 
     @Test
-    fun emptyClassification() {
+    fun emptyStaticDetectionList() {
         DetectionServerMock.detectEmpty()
 
         val result = webTestClient.post().uri("/image/static")
@@ -113,7 +113,7 @@ class ImageIT {
     }
 
     @Test
-    fun failedClassification() {
+    fun failedDetection() {
         DetectionServerMock.detectFail()
 
         val result = webTestClient.post().uri("/image/static")
@@ -128,6 +128,26 @@ class ImageIT {
         assertThat(result).isNotNull
         assertThat(result?.errorCode).isEqualTo(2001)
         assertThat(result?.message).isEqualTo("Invalid result from detector server")
+    }
+
+    @Test
+    fun emptyDetectionList() {
+        DetectionServerMock.detectEmpty()
+
+        val result = webTestClient.post().uri("/image")
+                .contentType(APPLICATION_JSON)
+                .bodyValue("""{"image": "test"}""")
+                .exchange()
+                .expectStatus().isOk
+                .expectBody(DetectionResult::class.java)
+                .returnResult()
+                .responseBody
+
+        assertThat(result).isNotNull
+        assertThat(result?.executionTime).isNotEqualTo(0.0)
+        assertThat(result?.image?.base64).isEqualTo("data:image/png;base64,test")
+        assertThat(result?.objects).isEmpty()
+        verifyNoInteractions(repository)
     }
 
     @Test

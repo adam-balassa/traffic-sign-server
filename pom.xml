@@ -10,7 +10,7 @@
     </parent>
     <groupId>hu.aut.bme</groupId>
     <artifactId>trafficsigns</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.1</version>
     <name>trafficsigns</name>
     <description>Traffic signs server</description>
 

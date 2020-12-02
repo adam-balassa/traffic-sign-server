@@ -1,5 +1,6 @@
 package hu.bme.aut.trafficsigns.service
 
+import hu.bme.aut.trafficsigns.api.request.DetectionQuery
 import hu.bme.aut.trafficsigns.api.response.DetectionResult
 import hu.bme.aut.trafficsigns.api.response.Base64Image
 import hu.bme.aut.trafficsigns.api.response.model.BoundingBox
@@ -24,6 +25,9 @@ class DetectionService (
 ) {
 
     private final val random = Random()
+
+    fun getAllSigns(): List<DetectedSign> = repository.findAll()
+    fun getSignsByPosition(query: DetectionQuery) = findCloseDetections(query.lat!!, query.lon!!, query.radius!!)
 
     fun runDetection(base64Image: String): DetectionResult {
         val path = base64ToImage(base64Image)
@@ -53,7 +57,7 @@ class DetectionService (
         return DetectionResult(
                 mutableListOf<Detection>().apply {
                     addAll(result.objects)
-                    addAll(DtoToModelMapper.INSTANCE.modelToDto(detectionsToAdd))
+                    addAll(DtoToModelMapper.INSTANCE.modelToDetection(detectionsToAdd))
                 },
                 result.image,
                 result.executionTime
@@ -74,7 +78,7 @@ class DetectionService (
                 detection.confidence = previous.confidence
                 detectionsToSave.add(previous)
             } else {
-                detectionsToSave.add(DtoToModelMapper.INSTANCE.dtoToModel(detection, lat, lon))
+                detectionsToSave.add(DtoToModelMapper.INSTANCE.detectionToModel(detection, lat, lon))
             }
         }
 
@@ -99,9 +103,10 @@ class DetectionService (
         return runDetection(image)
     }
 
-    private fun findCloseDetections(lat: Double, lon: Double): List<DetectedSign> {
-        val d = 0.00007
-        return repository.findByLatBetweenAndLonBetween(lat - d, lat + d, lon - d, lon + d)
+    private fun findCloseDetections(lat: Double, lon: Double, radius: Double = 0.00007): List<DetectedSign> {
+        return repository.findByLatBetweenAndLonBetween(
+                lat - radius, lat + radius,
+                lon - radius, lon + radius)
     }
 
     private fun DetectionResponse.toDetections(): List<Detection> {

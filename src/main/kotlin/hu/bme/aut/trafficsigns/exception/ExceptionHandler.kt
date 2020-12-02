@@ -19,8 +19,8 @@ class ExceptionHandler () {
         return ResponseEntity(e.toErrorResponse(), HttpStatus.BAD_GATEWAY)
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun badRequest(e: HttpMessageNotReadableException): ResponseEntity<Unit> {
+    @ExceptionHandler(HttpMessageNotReadableException::class, IllegalArgumentException::class)
+    fun badRequest(): ResponseEntity<Unit> {
         return ResponseEntity(HttpStatus.BAD_REQUEST)
     }
 

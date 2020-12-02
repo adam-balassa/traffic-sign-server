@@ -21,7 +21,7 @@ class DtoMappingTest {
 
         )
 
-        val model = DtoToModelMapper.INSTANCE.dtoToModel(dto, 4.0, 5.0)
+        val model = DtoToModelMapper.INSTANCE.detectionToModel(dto, 4.0, 5.0)
 
         assertThat(model.confidence).isEqualTo(0.5)
         assertThat(model.lat).isEqualTo(4.0)
@@ -43,7 +43,7 @@ class DtoMappingTest {
         )
         val detection = DetectionResult(dtos, Base64Image("image"), 0.66)
 
-        val models = DtoToModelMapper.dtoToModel(detection, 4.0, 5.0)
+        val models = DtoToModelMapper.detectionToModel(detection, 4.0, 5.0)
 
         assertThat(models).hasSize(2)
         val model1 = models[0]
@@ -68,7 +68,7 @@ class DtoMappingTest {
             signClass = 40
         }
 
-        val dto = DtoToModelMapper.INSTANCE.modelToDto(model)
+        val dto = DtoToModelMapper.INSTANCE.modelToDetection(model)
 
         assertThat(dto.confidence).isEqualTo(0.9)
         assertThat(dto.classification?.serial).isEqualTo(40)
@@ -83,7 +83,7 @@ class DtoMappingTest {
             signClass = 40
         }
 
-        val dto = DtoToModelMapper.INSTANCE.modelToDto(listOf(model, model))
+        val dto = DtoToModelMapper.INSTANCE.modelToDetection(listOf(model, model))
 
         assertThat(dto).allSatisfy {
             assertThat(it.confidence).isEqualTo(0.9)
