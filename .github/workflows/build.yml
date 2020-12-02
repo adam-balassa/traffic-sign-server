@@ -23,3 +23,14 @@ jobs:
 
       - name: Build
         run: ./mvnw package
+
+      - name: Pitest mutation coverage
+        run: ./mvnw pitest:mutationCoverage
+
+      - name: Deploy Pitest reports
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/pit-reports/*/
+
+
