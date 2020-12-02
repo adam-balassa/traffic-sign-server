@@ -3,6 +3,7 @@ package hu.bme.aut.trafficsigns.exception
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import java.io.PrintWriter
@@ -16,6 +17,11 @@ class ExceptionHandler () {
     @ExceptionHandler(InvalidDetectorResponse::class)
     fun internalError(e: InvalidDetectorResponse): ResponseEntity<ErrorResponse> {
         return ResponseEntity(e.toErrorResponse(), HttpStatus.BAD_GATEWAY)
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun badRequest(e: HttpMessageNotReadableException): ResponseEntity<Unit> {
+        return ResponseEntity(HttpStatus.BAD_REQUEST)
     }
 
 

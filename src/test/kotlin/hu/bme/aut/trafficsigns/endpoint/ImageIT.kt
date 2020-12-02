@@ -482,4 +482,24 @@ class ImageIT {
                 .allSatisfy { assertThat(it.signClass).isEqualTo(31) }
         verifyNoMoreInteractions(repository)
     }
+
+    @Test
+    fun staticImageBadRequest() {
+        webTestClient.post().uri("/image/static")
+                .contentType(APPLICATION_JSON)
+                .bodyValue("""{"invalid": "request"}""")
+                .exchange()
+                .expectStatus().isBadRequest
+                .expectBody().isEmpty
+    }
+
+    @Test
+    fun realTimeImageBadRequest() {
+        webTestClient.post().uri("/image")
+                .contentType(APPLICATION_JSON)
+                .bodyValue("""{"image": "test", "lat": null, "lon: 1.0"}""")
+                .exchange()
+                .expectStatus().isBadRequest
+                .expectBody().isEmpty
+    }
 }
