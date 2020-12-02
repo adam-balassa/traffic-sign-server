@@ -17,6 +17,9 @@
     <properties>
         <java.version>11</java.version>
         <kotlin.version>1.3.72</kotlin.version>
+        <pitest.version>1.4.10</pitest.version>
+        <pitest.junit5.version>0.11</pitest.junit5.version>
+        <pitest.html.version>0.2.1</pitest.html.version>
     </properties>
 
     <dependencies>
@@ -189,6 +192,44 @@
                         <version>${kotlin.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>${pitest.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>${pitest.junit5.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.github.wmaarts</groupId>
+                        <artifactId>pitest-mutation-testing-elements-plugin</artifactId>
+                        <version>${pitest.html.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <targetClasses>
+                        <param>hu.bme.aut.trafficsigns.**</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>hu.bme.aut.trafficsigns.*IT</param>
+                        <param>hu.bme.aut.trafficsigns.**.*IT</param>
+                        <param>hu.bme.aut.trafficsigns.unit.*</param>
+                    </targetTests>
+                    <excludedClasses>
+                        <param>hu.bme.aut.trafficsigns.exception.**</param>
+                        <param>hu.bme.aut.trafficsigns.config.**</param>
+                    </excludedClasses>
+                    <avoidCallsTo>
+                        <avoidCallsTo>kotlin.jvm.internal</avoidCallsTo>
+                    </avoidCallsTo>
+                    <outputFormats>
+                        <format>HTML2</format>
+                    </outputFormats>
+                </configuration>
             </plugin>
         </plugins>
     </build>
