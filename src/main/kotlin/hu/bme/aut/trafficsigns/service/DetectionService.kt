@@ -33,13 +33,19 @@ class DetectionService (
 
     fun runDetection(base64Image: String): DetectionResult {
         val path = base64ToImage(base64Image)
-        val response = withTimeMeasure {  http.detect(path) }
-        deleteImage(path)
-        return DetectionResult(
-                response.result.toDetections(),
-                Base64Image("data:image/png;base64,${base64Image}"),
-                response.time.toDouble()
-        )
+        try {
+            val response = withTimeMeasure {  http.detect(path) }
+            deleteImage(path)
+
+            return DetectionResult(
+                    response.result.toDetections(),
+                    Base64Image("data:image/png;base64,${base64Image}"),
+                    response.time.toDouble()
+            )
+        } catch (e: Exception) {
+            deleteImage(path)
+            throw e
+        }
     }
 
     fun runAndSaveDetection(image: String, lat: Double, lon: Double): DetectionResult {
@@ -51,7 +57,7 @@ class DetectionService (
 
         refreshSavedDetections(result, previousDetections, lat, lon)
 
-        val legitDetections = previousDetections.filter { it.confidence > 0.4 }
+        val legitDetections = previousDetections.filter { it.confidence >= 0.4 }
         val detectionsToAdd = legitDetections.filter { sign ->
             result.objects.all { sign.signClass != it.classification?.serial }
         }
@@ -95,7 +101,6 @@ class DetectionService (
                     detectionsToSave.add(previous)
             }
 
-        println()
         repository.saveAll(detectionsToSave)
         repository.deleteAll(detectionsToDelete)
     }

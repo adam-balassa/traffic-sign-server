@@ -39,7 +39,7 @@ class StoredDetectionsIT {
         assertThat(resultList)
                 .hasSize(2)
                 .allMatch {
-                    it.lat == 1.0 && it.lon == 2.0 && (
+                    it.lat == 3.0 && it.lon == 4.0 && (
                             it.confidence == 0.8 && it.classification?.serial == 0 ||
                                     it.confidence == 0.9 && it.classification?.serial == 42
                             )
@@ -52,8 +52,8 @@ class StoredDetectionsIT {
 
         val resultList = webTestClient.get().uri {
             it.path("/signs")
-                    .queryParam("lat", 1.01)
-                    .queryParam("lon", 2.01)
+                    .queryParam("lat", 3.01)
+                    .queryParam("lon", 4.01)
                     .queryParam("radius", 0.01)
                     .build()
         }.exchange()
@@ -66,7 +66,34 @@ class StoredDetectionsIT {
         assertThat(resultList)
                 .hasSize(2)
                 .allMatch {
-                    it.lat == 1.0 && it.lon == 2.0 && (
+                    it.lat == 3.0 && it.lon == 4.0 && (
+                            it.confidence == 0.8 && it.classification?.serial == 0 ||
+                                    it.confidence == 0.9 && it.classification?.serial == 42
+                            )
+                }
+    }
+
+    @Test
+    fun getSignsByPositionAfterDetection2() {
+        setupDetection()
+
+        val resultList = webTestClient.get().uri {
+            it.path("/signs")
+                    .queryParam("lat", 2.99)
+                    .queryParam("lon", 3.99)
+                    .queryParam("radius", 0.01)
+                    .build()
+        }.exchange()
+                .expectStatus().isOk
+                .expectBodyList(LocatedDetection::class.java)
+                .returnResult()
+                .responseBody
+
+        assertThat(resultList)
+        assertThat(resultList)
+                .hasSize(2)
+                .allMatch {
+                    it.lat == 3.0 && it.lon == 4.0 && (
                             it.confidence == 0.8 && it.classification?.serial == 0 ||
                                     it.confidence == 0.9 && it.classification?.serial == 42
                             )
@@ -77,8 +104,8 @@ class StoredDetectionsIT {
     fun getSignsBadRequest() {
         webTestClient.get().uri {
             it.path("/signs")
-                    .queryParam("lat", 1.01)
-                    .queryParam("lon", 2.01)
+                    .queryParam("lat", 3.01)
+                    .queryParam("lon", 4.01)
                     .build()
         }.exchange()
                 .expectStatus().isBadRequest
@@ -90,7 +117,7 @@ class StoredDetectionsIT {
 
         webTestClient.post().uri("/image")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("""{"image": "test", "lat": 1.0, "lon": 2.0}""")
+                .bodyValue("""{"image": "test", "lat": 3.0, "lon": 4.0}""")
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(DetectionResult::class.java)

@@ -9,6 +9,7 @@ import hu.bme.aut.trafficsigns.exception.ErrorResponse
 import hu.bme.aut.trafficsigns.model.DetectedSign
 import hu.bme.aut.trafficsigns.repository.DetectionRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Offset
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
@@ -24,6 +25,11 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD
 import org.springframework.test.web.reactive.server.WebTestClient
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.time.Duration
+import java.time.OffsetDateTime
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -41,6 +47,7 @@ class DetectionIT {
 
     @Test
     fun simpleStaticImageClassification() {
+        val tmp = Files.list(Path.of("tmp")).count()
         DetectionServerMock.detectSuccess()
 
         val result = webTestClient.post().uri("/image/static")
@@ -55,6 +62,7 @@ class DetectionIT {
         assertThat(result).isNotNull
         assertThat(result?.executionTime).isNotEqualTo(0.0)
         assertThat(result?.image?.base64).isEqualTo("data:image/png;base64,test")
+        assertThat(result?.executionTime).isNotNull()
         assertThat(result?.objects).containsExactlyInAnyOrderElementsOf(listOf(
                 Detection(BoundingBox(Coordinates(2.0, 2.0), Coordinates(4.0, 6.0)),
                         Classification(0),
@@ -64,7 +72,10 @@ class DetectionIT {
                         Classification(42),
                         0.9
                 )
-        ))
+        )).allSatisfy {
+            assertThat(it.classification?.label).isIn("Speed limit (20km/h)", "End of no passing by vehicles over 3.5 metric tons")
+        }
+        assertThat(tmp).isEqualTo(Files.list(Path.of("tmp")).count())
     }
 
 
@@ -114,6 +125,7 @@ class DetectionIT {
 
     @Test
     fun failedDetection() {
+        val tmp = Files.list(Path.of("tmp")).count()
         DetectionServerMock.detectFail()
 
         val result = webTestClient.post().uri("/image/static")
@@ -128,6 +140,7 @@ class DetectionIT {
         assertThat(result).isNotNull
         assertThat(result?.errorCode).isEqualTo(2001)
         assertThat(result?.message).isEqualTo("Invalid result from detector server")
+        assertThat(tmp).isEqualTo(Files.list(Path.of("tmp")).count())
     }
 
     @Test
@@ -294,7 +307,7 @@ class DetectionIT {
                 .responseBody
 
         assertThat(result).isNotNull
-        assertThat(result?.executionTime).isNotEqualTo(0.0)
+        assertThat(result?.executionTime).isGreaterThan(300.0)
         assertThat(result?.image?.base64).isEqualTo("data:image/png;base64,test")
         assertThat(result?.objects).containsExactlyInAnyOrderElementsOf(listOf(
                 Detection(BoundingBox(Coordinates(2.0, 2.0), Coordinates(4.0, 6.0)),
@@ -416,7 +429,7 @@ class DetectionIT {
                         DetectedSign().apply {
                             lat = 19.044; lon = 49.198
                             signClass = 30
-                            confidence = 0.6
+                            confidence = 0.5
                         },
                         DetectedSign().apply {
                             lat = 19.044; lon = 49.198
@@ -451,7 +464,7 @@ class DetectionIT {
                         Classification(42),
                         0.9
                 ),
-                Detection(null, Classification(30), 0.5)
+                Detection(null, Classification(30), 0.4)
         ))
     }
 
@@ -463,7 +476,7 @@ class DetectionIT {
                         DetectedSign().apply {
                             lat = 1.01; lon = 2.01
                             signClass = 30
-                            confidence = 0.6
+                            confidence = 0.5
                         },
                         DetectedSign().apply {
                             lat = 19.044; lon = 49.198
@@ -493,7 +506,7 @@ class DetectionIT {
                 .allMatch {
                     it.confidence == 0.85 && it.signClass == 0 && it.lat == 1.0 && it.lon == 2.0 ||
                             it.confidence == 0.9 && it.signClass == 42 && it.lat == 1.0 && it.lon == 2.0 ||
-                            it.confidence == 0.5 && it.signClass == 30 && it.lat == 1.01 && it.lon == 2.01
+                            it.confidence == 0.4 && it.signClass == 30 && it.lat == 1.01 && it.lon == 2.01
                 }
 
         verify(repository).deleteAll(savedDetections.capture())

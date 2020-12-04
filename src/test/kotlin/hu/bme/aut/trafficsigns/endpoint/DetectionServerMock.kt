@@ -7,6 +7,7 @@ class DetectionServerMock {
     companion object {
         fun detectSuccess() {
             stubFor(post(urlEqualTo(DETECT_ENDPOINT))
+                    .withRequestBody(matchingJsonPath("$.path"))
                     .willReturn(aResponse()
                             .withHeader("Content-Type", "application/json")
                             .withStatus(200)
@@ -14,6 +15,7 @@ class DetectionServerMock {
                                 | "objects": [[0.8, 3, 4, 2, 4], [0.9, 0.5, 0.5, 1, 1]],
                                 | "classifications": [0, 42]
                             | }""".trimMargin())
+                            .withFixedDelay(300)
                     )
             )
         }
