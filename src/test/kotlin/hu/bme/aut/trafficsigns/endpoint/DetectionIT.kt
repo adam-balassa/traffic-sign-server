@@ -136,7 +136,7 @@ class DetectionIT {
 
         val result = webTestClient.post().uri("/image")
                 .contentType(APPLICATION_JSON)
-                .bodyValue("""{"image": "test"}""")
+                .bodyValue("""{"image": "test", "lat": 19.044, "lon": 49.198}""")
                 .exchange()
                 .expectStatus().isOk
                 .expectBody(DetectionResult::class.java)

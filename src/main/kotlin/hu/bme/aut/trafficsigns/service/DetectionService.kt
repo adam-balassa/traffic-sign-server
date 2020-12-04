@@ -15,8 +15,10 @@ import hu.bme.aut.trafficsigns.util.deleteImage
 import hu.bme.aut.trafficsigns.util.imageToBase64
 import hu.bme.aut.trafficsigns.util.withTimeMeasure
 import hu.bme.aut.trafficsigns.mapping.DtoToModelMapper
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.stereotype.Service
 import java.util.*
+import javax.transaction.Transactional
 
 @Service
 class DetectionService (
@@ -64,7 +66,9 @@ class DetectionService (
         )
     }
 
-    private fun refreshSavedDetections(result: DetectionResult, previousDetections: List<DetectedSign>, lat: Double, lon: Double) {
+    @Transactional
+    @Modifying
+    internal fun refreshSavedDetections(result: DetectionResult, previousDetections: List<DetectedSign>, lat: Double, lon: Double) {
         val detectionsToSave = mutableListOf<DetectedSign>()
         val detectionsToDelete = mutableListOf<DetectedSign>()
 
@@ -91,6 +95,7 @@ class DetectionService (
                     detectionsToSave.add(previous)
             }
 
+        println()
         repository.saveAll(detectionsToSave)
         repository.deleteAll(detectionsToDelete)
     }
